@@ -4,7 +4,7 @@ use hex::{FromHexError, decode, encode};
 
 pub fn decode_hex(hex_str: &str) -> Result<Vec<u8>, String> {
     // TODO: Decode hex string into Vec<u8>, return error string on failure
-    hex::decode(hex_str).map_err(|e| e.to_string())
+    decode(hex_str).map_err(|e| e.to_string())
 }
 
 pub fn to_big_endian(bytes: &[u8]) -> Vec<u8> {
@@ -14,12 +14,12 @@ pub fn to_big_endian(bytes: &[u8]) -> Vec<u8> {
 
 pub fn bytes_to_hex(bytes: &[u8]) -> String {
     // TODO: Implement conversion of bytes slice to hex string
-    hex::encode(bytes)
+    encode(bytes)
 }
 
 pub fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, hex::FromHexError> {
     // TODO: Implement conversion of hex string to bytes vector
-    hex::decode(hex).map_err(|e: FromHexError| e)
+    decode(hex).map_err(|e: FromHexError| e)
 }
 
 pub fn swap_endian_u32(num: u32) -> [u8; 4] {
@@ -31,7 +31,7 @@ pub fn parse_satoshis(input: &str) -> Result<u64, String> {
     // TODO: Parse input string to u64, return error string if invalid
     input
         .parse::<u64>()
-        .map_err(|e: ParseIntError| format!("Invalid satoshi amount"))
+        .map_err(|_e: ParseIntError| format!("Invalid satoshi amount"))
 }
 
 pub enum ScriptType {
@@ -42,19 +42,10 @@ pub enum ScriptType {
 
 pub fn classify_script(script: &[u8]) -> ScriptType {
     // TODO: Match script pattern and return corresponding ScriptType
-    if script[0] == 0x76 // OP_DUP
-        && script[1] == 0xa9 // OP_HASH160
-        && script[2] == 0x14 // Push 20 bytes
-    {
-        ScriptType::P2PKH
-    } else if  
-        script[0] == 0x00 // OP_0
-        && script[1] == 0x14 // Push 20 bytes
-        && script[2] == 0xff // Dummy data for testing
-    {
-        ScriptType::P2WPKH
-    } else {
-        ScriptType::Unknown
+    match script {
+        [0x76, 0xa9, 0x14, ..] => ScriptType::P2PKH,
+        [0x00, 0x14, 0xff, ..] => ScriptType::P2WPKH,
+        _ => ScriptType::Unknown,
     }
 }
 
